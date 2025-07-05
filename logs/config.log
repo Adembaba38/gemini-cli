@@ -38,3 +38,22 @@
 2025-07-05 22:27:57,976 - INFO - Varsayılan kullanıcı eklendi: gmy
 2025-07-05 22:27:57,976 - INFO - Varsayılan veriler eklendi.
 2025-07-05 22:27:57,976 - INFO - Veritabanı başlatma işlemi tamamlandı.
+2025-07-05 22:32:21,916 - WARNING - Modül yüklenemedi: badges: No module named 'badges'
+2025-07-05 22:32:21,916 - WARNING - Modül yüklenemedi: users: No module named 'users'
+2025-07-05 22:32:21,916 - WARNING - Modül yüklenemedi: pdf_utils: No module named 'pdf_utils'
+2025-07-05 22:32:21,917 - WARNING - Modül yüklenemedi: permissions: No module named 'permissions'
+2025-07-05 22:32:21,917 - WARNING - Modül yüklenemedi: enhanced_project_management: No module named 'enhanced_project_management'
+2025-07-05 22:32:21,917 - WARNING - Enhanced Innovation modülü yüklenemedi: No module named 'enhanced_innovation'
+2025-07-05 22:32:21,917 - WARNING - Yaşayan Süreç Ekosistemi modülü yüklenemedi: No module named 'yasayan_surec_ekosistemi'
+2025-07-05 22:32:21,919 - INFO - SQLite tabloları başarıyla oluşturuldu.
+2025-07-05 22:32:21,919 - INFO - Veri migrasyonu başarıyla tamamlandı.
+2025-07-05 22:32:21,924 - INFO - Varsayılan çalışan eklendi: İkmal ve Operasyon GMY (GMY001)
+2025-07-05 22:32:21,929 - INFO - Varsayılan çalışan eklendi: Denetim Müdürü (MDR001)
+2025-07-05 22:32:21,938 - INFO - Varsayılan çalışan eklendi: İK Grup Müdürü (CLS001)
+2025-07-05 22:32:21,944 - INFO - Varsayılan çalışan eklendi: Satınalma Müdürü (ADM001)
+2025-07-05 22:32:21,949 - INFO - Varsayılan kullanıcı eklendi: admin
+2025-07-05 22:32:21,956 - INFO - Varsayılan kullanıcı eklendi: mudur
+2025-07-05 22:32:21,961 - INFO - Varsayılan kullanıcı eklendi: calisan
+2025-07-05 22:32:21,965 - INFO - Varsayılan kullanıcı eklendi: gmy
+2025-07-05 22:32:21,965 - INFO - Varsayılan veriler eklendi.
+2025-07-05 22:32:21,965 - INFO - Veritabanı başlatma işlemi tamamlandı.

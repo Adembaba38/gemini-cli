@@ -1,4 +1,4 @@
-#!/bin/bash
+THIS SHOULD BE A LINTER ERROR#!/bin/bash
 
 # Effinova Panel - Başlatma Scripti
 # Bu script uygulamayı başlatmak için kullanılır
