@@ -70,17 +70,21 @@ except ImportError:
 st.set_page_config(page_title="EFFINOVA Panel", layout="wide", page_icon="⭐")
 
 # CONFIG'DEN ALINAN GLOBAL DEĞİŞKENLER
-DATABASE_TYPE = config.DATABASE_TYPE
-MYSQL_AVAILABLE = config.MYSQL_AVAILABLE
-SQLALCHEMY_AVAILABLE = config.SQLALCHEMY_AVAILABLE
-SQLITE_DB_PATH = config.SQLITE_DB_PATH
-db_manager = config.db_manager
-execute_query = config.execute_query
-get_dataframe = config.get_dataframe
-get_connection = config.get_connection
-log_action = config.log_action
-initialize_database = config.initialize_database
-test_connection = config.test_connection
+try:
+    DATABASE_TYPE = config.DATABASE_TYPE
+    MYSQL_AVAILABLE = config.MYSQL_AVAILABLE
+    SQLALCHEMY_AVAILABLE = config.SQLALCHEMY_AVAILABLE
+    SQLITE_DB_PATH = config.SQLITE_DB_PATH
+    db_manager = config.db_manager
+    execute_query = config.execute_query
+    get_dataframe = config.get_dataframe
+    get_connection = config.get_connection
+    log_action = config.log_action
+    initialize_database = config.initialize_database
+    test_connection = config.test_connection
+except Exception as e:
+    st.error(f"❌ Config yükleme hatası: {e}")
+    st.stop()
 
 # LOGGING SETUP
 BASE_DIR_FOR_LOG = os.path.dirname(os.path.abspath(__file__))
