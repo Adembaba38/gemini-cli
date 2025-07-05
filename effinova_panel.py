@@ -195,10 +195,11 @@ def add_performance_controls():
     st.sidebar.markdown("---")
     st.sidebar.subheader("⚡ Performans")
 
+    # Statik anahtar kullanımı: time tabanlı anahtarlar yeniden çalıştırmalarda çakışmaya neden olabiliyor
     performance_mode = st.sidebar.toggle(
         "🚀 Hızlı Mod",
         value=st.session_state.get('performance_mode', True),
-        key=f"perf_toggle_{st.session_state.get('username', 'guest')}_{int(time_module.time())}"
+        key=f"perf_toggle_{st.session_state.get('username', 'guest')}"
     )
     st.session_state.performance_mode = performance_mode
 
@@ -209,7 +210,7 @@ def add_performance_controls():
         st.sidebar.info("🎨 Tam mod aktif")
         st.sidebar.caption("• Tüm çalışanlar\n• Tam özellikler")
 
-    if st.sidebar.button("🧹 Cache Temizle", key=f"sidebar_cache_clear_{st.session_state.get('username', 'guest')}_{int(time_module.time())}", use_container_width=True):
+    if st.sidebar.button("🧹 Cache Temizle", key=f"sidebar_cache_clear_{st.session_state.get('username', 'guest')}", use_container_width=True):
         st.cache_data.clear()
         st.sidebar.success("✅ Temizlendi!")
         st.rerun()
@@ -325,7 +326,7 @@ def main():
         "Panel Seç",
         list(role_options.keys()),
         index=current_index,
-        key=f"role_selector_{int(time_module.time())}"
+        key="role_selector"
     )
 
     st.session_state["user_role"] = role_options[selected_role_label]
@@ -335,7 +336,7 @@ def main():
     st.sidebar.info(f"🏷️ **Rol:** {st.session_state['user_role'].title()}")
     st.sidebar.info(f"🏢 **Departman:** {st.session_state['user_department']}")
 
-    if st.sidebar.button("🔍 Bağlantı Test", key=f"connection_test_btn_{int(time_module.time())}"):
+    if st.sidebar.button("🔍 Bağlantı Test", key="connection_test_btn"):
         if test_connection():
             st.sidebar.success("✅ Bağlantı başarılı!")
         else:
@@ -345,10 +346,10 @@ def main():
 
     col1_main_btn, col2_main_btn = st.columns(2)
     with col1_main_btn:
-        if st.button("✅ Test Bildirim", key=f"test_notification_btn_main_{int(time_module.time())}"):
+        if st.button("✅ Test Bildirim", key="test_notification_btn_main"):
             send_notification("Test başarılı! 🎉", "success")
     with col2_main_btn:
-        if st.button("🧹 Cache Temizle", key=f"cache_clear_btn_main_{int(time_module.time())}"):
+        if st.button("🧹 Cache Temizle", key="cache_clear_btn_main"):
             st.cache_data.clear()
             send_notification("Cache temizlendi!", "info")
 
