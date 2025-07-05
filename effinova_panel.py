@@ -25,8 +25,13 @@ except ImportError:
 import config
 
 # Harici modüllerimizi import ediyoruz
-import excel_to_db   # Excel import mantığı burada
-import employees     # Çalışan yönetimi fonksiyonları burada
+try:
+    import excel_to_db   # Excel import mantığı burada
+    import employees     # Çalışan yönetimi fonksiyonları burada
+except ImportError as e:
+    print(f"⚠️ Modül import hatası: {e}")
+    excel_to_db = None
+    employees = None
 
 # STREAMLIT CONFIG - EN BAŞTA OLMALI!
 st.set_page_config(page_title="EFFINOVA Panel", layout="wide", page_icon="⭐")
