@@ -764,6 +764,391 @@ def manage_employees_ui():
         else:
             st.info("`employees` modülü yüklenemedi.")
 
+# ANA UYGULAMA
+def main():
+    """Ana uygulama"""
+    global total_users, DB_SYSTEM_CONFIGURED
+
+    st.title("⭐ EFFINOVA | Admin Paneli")
+    st.markdown(f"### ✅ Sistem başarıyla yüklendi! 🚀 ({total_users} kullanıcı)")
+
+    add_performance_controls()
+
+    st.sidebar.title("🎯 Navigasyon")
+
+    role_options = {
+        "👨‍💻 Admin Paneli": "admin",
+        "👔 Müdür Paneli": "mudur",
+        "👤 Çalışan Paneli": "calisan",
+        "🏢 GMY Paneli": "gmy"
+    }
+
+    try:
+        current_index = list(role_options.values()).index(st.session_state["user_role"])
+    except ValueError:
+        current_index = 0
+
+    selected_role_label = st.sidebar.selectbox(
+        "Panel Seç",
+        list(role_options.keys()),
+        index=current_index,
+        key=f"role_selector_{int(time_module.time())}"
+    )
+
+    st.session_state["user_role"] = role_options[selected_role_label]
+
+    st.sidebar.markdown("---")
+    st.sidebar.info(f"👤 **Kullanıcı:** {st.session_state['username']}")
+    st.sidebar.info(f"🏷️ **Rol:** {st.session_state['user_role'].title()}")
+    st.sidebar.info(f"🏢 **Departman:** {st.session_state['user_department']}")
+
+    if st.sidebar.button("🔍 Bağlantı Test", key=f"connection_test_btn_{int(time_module.time())}"):
+        test_connection()
+
+    st.markdown(f"## Hoş geldin, **{st.session_state['username']}**! 👋")
+
+    col1_main_btn, col2_main_btn = st.columns(2)
+    with col1_main_btn:
+        if st.button("✅ Test Bildirim", key=f"test_notification_btn_main_{int(time_module.time())}"):
+            send_notification("Test başarılı! 🎉", "success")
+    with col2_main_btn:
+        if st.button("🧹 Cache Temizle", key=f"cache_clear_btn_main_{int(time_module.time())}"):
+            st.cache_data.clear()
+            send_notification("Cache temizlendi!", "info")
+            
+    # ANA TAB LİSTESİ
+    tab_titles = [
+        "👥 Çalışan Yönetimi",         # 0
+        "🧬 Canlı Süreç Yönetimi",     # 1
+        "💡 İnovasyon",               # 2
+        "📅 Proje Yönetimi",           # 3
+        "📊 Raporlar",                 # 4
+        "👤 Kullanıcı Yönetimi",       # 5
+        "🏅 Rozetler",                 # 6
+        "🏆 Liderlik Tablosu",         # 7
+        "🎛️ Performance Dashboard",   # 8
+        "🔧 Sistem Onarım & Loglar",  # 9
+        "📈 Analitik",                # 10
+        "📁 Excel Aktarım"            # 11
+    ]
+
+    tabs = st.tabs(tab_titles)
+    
+    # Sekme 0: Çalışan Yönetimi
+    with tabs[0]:
+        if has_access("calisan_yonetimi", st.session_state["user_role"]):
+            st.subheader("➕ Yeni Çalışan Ekle")
+            with st.form(key=f"add_new_employee_form_unique_{int(time_module.time())}", clear_on_submit=True):
+                st.write("#### Çalışan Bilgilerini Girin")
+                col1_form, col2_form = st.columns(2)
+                with col1_form:
+                    new_ad_soyad = st.text_input("👤 Ad Soyad:", placeholder="Örn: Mehmet Kaya", key=f"new_ad_soyad_input_{int(time_module.time())}")
+                    new_sicil_no = st.text_input("🆔 Sicil No:", placeholder="Örn: 1001", key=f"new_sicil_no_input_{int(time_module.time())}")
+                    new_pozisyon = st.selectbox("💼 Pozisyon:", [
+                        "Çalışan", "Uzman", "Şef", "Müdür", "GMY", "Genel Müdür"
+                    ], key=f"new_pozisyon_select_{int(time_module.time())}")
+
+                with col2_form:
+                    new_departman = st.selectbox("🏢 Departman:", [
+                        "İkmal ve Operasyon GMY", "Denetim Müdürlüğü", "İnsan Kaynakları Grup Müdürlüğü",
+                        "Satınalma Müdürlüğü", "Muhasebe Müdürlüğü", "Satış Müdürlüğü", "Operasyon Müdürlüğü",
+                        "Mali ve İdari İşler GMY", "Teknik Müdürlüğü", "IT Müdürlüğü"
+                    ], key=f"new_departman_select_{int(time_module.time())}")
+                    new_email = st.text_input("📧 Email:", placeholder="Otomatik oluşturulacak", key=f"new_email_input_{int(time_module.time())}")
+                    new_telefon = st.text_input("📱 Telefon:", placeholder="Örn: 0532 123 45 67", key=f"new_telefon_input_{int(time_module.time())}")
+
+                new_yonetici = st.text_input("👨‍💼 Yönetici (opsiyonel):", placeholder="Örn: Ali Veli", key=f"new_yonetici_input_{int(time_module.time())}")
+
+                submit_button_pressed = st.form_submit_button("🎯 Çalışan Ekle")
+                if submit_button_pressed:
+                    if new_ad_soyad and new_sicil_no and new_pozisyon and new_departman:
+                        try:
+                            if not new_email:
+                                new_email = f"{new_ad_soyad.lower().replace(' ', '.').replace('ç','c').replace('ş','s').replace('ğ','g').replace('ı','i').replace('ö','o').replace('ü','u')}@effinova.com"
+
+                            employee_insert_query = """
+                                INSERT INTO employees
+                                (Sicil_No, Ad_Soyad, Pozisyon, Departman, Yonetici_Adi, Email, deleted, created_at, updated_at, Telefon)
+                                VALUES (?, ?, ?, ?, ?, ?, 0, ?, ?, ?)
+                            """
+                            if execute_query(employee_insert_query, (new_sicil_no, new_ad_soyad, new_pozisyon, new_departman, new_yonetici, new_email, datetime.now(), datetime.now(), new_telefon), fetch=False):
+                                st.success(f"✅ {new_ad_soyad} başarıyla çalışan olarak eklendi!")
+
+                                sifre = f"{new_sicil_no}2024!"
+                                hashed_sifre = hashlib.sha256(sifre.encode()).hexdigest()
+
+                                user_insert_query = """
+                                    INSERT INTO users
+                                    (username, password, role, email, employee_sicil_no, department, deleted, created_at)
+                                    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                                """
+                                if execute_query(user_insert_query, (
+                                    f"user_{new_sicil_no}",
+                                    hashed_sifre,
+                                    "calisan",
+                                    new_email,
+                                    new_sicil_no,
+                                    new_departman,
+                                    False,
+                                    datetime.now().isoformat()
+                                ), fetch=False):
+                                    st.success(f"✅ {new_ad_soyad} için kullanıcı hesabı oluşturuldu!")
+                                    st.info(f"👤 Kullanıcı Adı: user_{new_sicil_no}")
+                                    st.info(f"🔑 Şifre: {sifre}")
+                                    st.balloons()
+                                else:
+                                    st.warning("❗ Kullanıcı hesabı oluşturulurken bir sorun oluştu.")
+
+                                st.cache_data.clear()
+                                time_module.sleep(1)
+                                st.rerun()
+
+                            else:
+                                st.error("❌ Çalışan eklenirken bir hata oluştu.")
+
+                        except Exception as e:
+                            st.error(f"❌ Ekleme hatası: {e}")
+                            logger.error(f"Yeni çalışan ekleme hatası: {e}")
+                    else:
+                        st.error("❌ Zorunlu alanları doldurun!")
+
+            st.markdown("---")
+            manage_employees_ui()
+        else:
+            st.warning("⚠️ Bu sekmeye erişim yetkiniz yok.")
+
+    # Sekme 1: Canlı Süreç Yönetimi
+    with tabs[1]:
+        if has_access("canli_surec_yonetimi", st.session_state["user_role"]) or st.session_state["user_role"] == "admin":
+            canli_surec_yonetimi()
+        else:
+            st.warning("⚠️ Bu sekmeye erişim yetkiniz yok.")
+
+    # Sekme 2: İnovasyon
+    with tabs[2]:
+        if has_access("inovasyon", st.session_state["user_role"]):
+            st.subheader("💡 İnovasyon Fikirleri")
+            manage_innovation(
+                employee_view=True,
+                admin_view=(st.session_state["user_role"] in ["admin", "gmy"]),
+                show_submissions=True,
+                show_badge_history=True,
+                show_logs=(st.session_state["user_role"] == "admin")
+            )
+        else:
+            st.warning("⚠️ Bu sekmeye erişim yetkiniz yok.")
+
+    # Sekme 3: Proje Yönetimi
+    with tabs[3]:
+        if has_access("proje_yonetimi", st.session_state["user_role"]):
+            st.subheader("📅 Proje Yönetimi")
+            if project_panel_module and hasattr(project_panel_module, 'main'):
+                try:
+                    project_panel_module.main()
+                except Exception as e:
+                    st.error(f"❌ Proje paneli hatası: {e}")
+                    logger.error(f"Proje paneli hatası: {e}")
+            else:
+                st.info("⚙️ Proje yönetimi modülü yüklenmedi")
+        else:
+            st.warning("⚠️ Bu sekmeye erişim yetkiniz yok.")
+
+    # Sekme 4: Raporlar
+    with tabs[4]:
+        if has_access("raporlar", st.session_state["user_role"]):
+            st.subheader("📊 Raporlar")
+
+            col1_report, col2_report = st.columns(2)
+            with col1_report:
+                if st.button("📄 PDF Rapor", key=f"pdf_report_btn_{int(time_module.time())}"):
+                    if pdf_utils_module and hasattr(pdf_utils_module, 'export_pdf_report'):
+                        try:
+                            pdf_utils_module.export_pdf_report()
+                        except Exception as e:
+                            st.error(f"❌ PDF rapor hatası: {e}")
+                            logger.error(f"PDF rapor hatası: {e}")
+                    else:
+                        send_notification("📄 PDF rapor modülü yüklenmedi", "warning")
+
+            with col2_report:
+                if st.button("📈 Excel Rapor", key=f"excel_report_btn_{int(time_module.time())}"):
+                    send_notification("📊 Excel rapor özelliği geliştiriliyor!", "info")
+        else:
+            st.warning("⚠️ Bu sekmeye erişim yetkiniz yok.")
+
+    # Sekme 5: Kullanıcı Yönetimi
+    with tabs[5]:
+        if has_access("kullanici_yonetimi", st.session_state["user_role"]):
+            st.subheader("👤 Kullanıcı Yönetimi")
+            if users_module and hasattr(users_module, 'manage_users'):
+                try:
+                    users_module.manage_users()
+                except Exception as e:
+                    st.error(f"❌ Kullanıcı yönetimi hatası: {e}")
+                    logger.error(f"Kullanıcı yönetimi hatası: {e}")
+            else:
+                st.info("⚙️ Kullanıcı yönetimi modülü yüklenmedi")
+        else:
+            st.warning("⚠️ Bu sekmeye erişim yetkiniz yok.")
+
+    # Sekme 6: Rozetler
+    with tabs[6]:
+        if has_access("rozetler", st.session_state["user_role"]):
+            st.subheader("🏅 Rozet Sistemi")
+
+            try:
+                if badges_module and hasattr(badges_module, 'manage_badges_main'):
+                    badges_module.manage_badges_main()
+                else:
+                    st.info("⚙️ Rozet modülü yüklenmedi, basit sistem kullanılıyor")
+
+                    employees_for_badges = get_dataframe("SELECT Ad_Soyad, Sicil_No FROM employees WHERE deleted = 0")
+                    if not employees_for_badges.empty:
+                        selected_emp_name = st.selectbox("Çalışan Seç:", employees_for_badges['Ad_Soyad'].tolist(), key=f"badge_emp_select_unique_{int(time_module.time())}")
+                    else:
+                        selected_emp_name = "Çalışan Yok"
+                        st.warning("Sistemde hiç çalışan bulunamadı.")
+
+                    st.write(f"### {selected_emp_name} - Rozetler")
+                    st.info("🏅 İlk Adım - 10 puan")
+                    st.info("💡 Fikir Makinesi - 20 puan")
+                    st.info("🥇 Verimlilik Şampiyonu - 30 puan")
+
+            except Exception as e:
+                st.error(f"❌ Rozet modülü hatası: {e}")
+                logger.error(f"Rozet sistemi genel hatası: {e}")
+        else:
+            st.warning("⚠️ Bu sekmeye erişim yetkiniz yok.")
+
+    # Sekme 7: Liderlik Tablosu
+    with tabs[7]:
+        if has_access("liderlik_tablosu", st.session_state["user_role"]):
+            st.subheader("🏆 Liderlik Tablosu")
+
+            try:
+                if badges_module and hasattr(badges_module, 'show_leaderboard_main'):
+                    badges_module.show_leaderboard_main()
+                else:
+                    st.info("⚙️ Liderlik modülü yüklenmedi, basit sistem kullanılıyor")
+                    df_scores = get_employee_scores()
+
+                    if not df_scores.empty:
+                        display_leaderboard = df_scores.head(10)
+                        for idx, row in display_leaderboard.iterrows():
+                            emoji = "🏅"
+                            if idx == 0: emoji = "🥇"
+                            elif idx == 1: emoji = "🥈"
+                            elif idx == 2: emoji = "🥉"
+
+                            col1, col2, col3 = st.columns([0.5, 2, 1])
+                            with col1:
+                                st.markdown(f"### {emoji}")
+                            with col2:
+                                st.markdown(f"**{row['[Ad Soyad]']}**")
+                                st.caption(f"Ort. Skor: {row['ort_skor']:.2f}")
+                            with col3:
+                                st.metric("Son Skor", row['son_skor'])
+                    else:
+                        st.info("Liderlik tablosunda gösterilecek veri bulunamadı.")
+
+            except Exception as e:
+                st.error(f"❌ Liderlik modülü hatası: {e}")
+                logger.error(f"Liderlik tablosu genel hatası: {e}")
+        else:
+            st.warning("⚠️ Bu sekmeye erişim yetkiniz yok.")
+
+    # Sekme 8: Performance Dashboard
+    with tabs[8]:
+        if st.session_state["user_role"] in ["admin", "gmy"]:
+            show_performance_dashboard()
+        else:
+            st.warning("⚠️ Performance Dashboard sadece admin ve GMY erişebilir.")
+
+    # Sekme 9: Sistem Onarım & Loglar
+    with tabs[9]:
+        if st.session_state["user_role"] == "admin":
+            st.subheader("🔧 Sistem Onarım & Log Yönetimi")
+            
+            repair_tab1, repair_tab2 = st.tabs([
+                "🛠️ Sistem Araçları", 
+                "📋 Log Görüntüleme"
+            ])
+            
+            with repair_tab1:
+                sistem_onarim()
+            
+            with repair_tab2:
+                st.subheader("📋 Sistem Logları")
+                
+                log_file = LOG_FILE_PATH
+                try:
+                    if os.path.exists(log_file):
+                        with open(log_file, 'r', encoding='utf-8', errors='replace') as f:
+                            log_content = f.read()
+                        
+                        col1, col2 = st.columns(2)
+                        with col1:
+                            log_level = st.selectbox("Log Seviyesi:", 
+                                ["Tümü", "ERROR", "WARNING", "INFO"], 
+                                key="log_level_filter")
+                        with col2:
+                            show_lines = st.slider("Gösterilecek satır:", 10, 500, 100)
+                        
+                        if log_content:
+                            if log_level != "Tümü":
+                                filtered_lines = [line for line in log_content.split('\n') 
+                                                if log_level in line]
+                                filtered_content = '\n'.join(filtered_lines[-show_lines:])
+                            else:
+                                filtered_content = '\n'.join(log_content.split('\n')[-show_lines:])
+                            
+                            st.text_area("📝 Log İçeriği:", filtered_content, height=400)
+                            
+                            st.subheader("📊 Log İstatistikleri")
+                            col1, col2, col3, col4 = st.columns(4)
+                            
+                            with col1:
+                                error_count = log_content.count("ERROR")
+                                st.metric("🔴 Errors", error_count)
+                            with col2:
+                                warning_count = log_content.count("WARNING")
+                                st.metric("🟡 Warnings", warning_count)
+                            with col3:
+                                info_count = log_content.count("INFO")
+                                st.metric("🔵 Info", info_count)
+                            with col4:
+                                total_lines = len(log_content.split('\n'))
+                                st.metric("📄 Toplam Satır", total_lines)
+                        else:
+                            st.info("📝 Log dosyası boş.")
+                            
+                    else:
+                        st.info("📝 Log dosyası bulunamadı.")
+                        if st.button("🔧 Log Dosyası Oluştur"):
+                            with open(log_file, 'w', encoding='utf-8') as f:
+                                f.write("# EFFINOVA Panel Log - Yeni Oluşturuldu\n")
+                            st.success("✅ Log dosyası oluşturuldu!")
+                            st.rerun()
+                            
+                except Exception as e:
+                    st.error(f"❌ Log hatası: {e}")
+        else:
+            st.warning("⚠️ Bu sekmeye sadece admin erişebilir.")
+
+    # Sekme 10: Analitik  
+    with tabs[10]:
+        if has_access("analitik", st.session_state["user_role"]):
+            display_analytics()
+        else:
+            st.warning("⚠️ Bu sekmeye erişim yetkiniz yok.")
+
+    # Sekme 11: Excel Aktarım
+    with tabs[11]:
+        if has_access("excel_aktarim", st.session_state["user_role"]):
+            excel_import_section()
+        else:
+            st.warning("⚠️ Bu sekmeye erişim yetkiniz yok.")
+
 # SESSION STATE INIT
 if "user_role" not in st.session_state:
     st.session_state["user_role"] = "admin"
@@ -771,3 +1156,26 @@ if "username" not in st.session_state:
     st.session_state["username"] = "admin"
 if "user_department" not in st.session_state:
     st.session_state["user_department"] = "IT"
+
+# UYGULAMA BAŞLATMA
+if __name__ == "__main__":
+    # Veritabanını başlat
+    DB_SYSTEM_CONFIGURED = initialize_database()
+    
+    # Kullanıcı sayısını güncelle
+    if DB_SYSTEM_CONFIGURED:
+        try:
+            user_count_result = execute_query("SELECT COUNT(*) as total FROM users")
+            total_users = user_count_result[0]['total'] if user_count_result and user_count_result[0] else 0
+        except:
+            total_users = 0
+    
+    if DB_SYSTEM_CONFIGURED:
+        try:
+            main()
+        except Exception as e:
+            st.error(f"❌ Uygulama genel hatası: {e}")
+            logger.critical(f"Ana uygulama beklenmeyen hata: {e}")
+    else:
+        st.error("❌ Uygulama başlatılamadı: Veritabanı sistemi yapılandırılamadı.")
+        logger.critical("Uygulama başlatılamadı: Veritabanı sistemi yapılandırılamadı.")
