@@ -138,7 +138,7 @@ def get_employee_scores():
     """Çalışan skorlarını çek"""
     try:
         query = """
-            SELECT employee_name as '[Ad Soyad]',
+            SELECT employee_name as ad_soyad,
                     MAX(tarih) AS son_tarih,
                     MAX(toplam_skor) AS son_skor,
                     ROUND(AVG(toplam_skor), 2) AS ort_skor,
@@ -225,7 +225,7 @@ def get_employees_from_db():
                 Departman as departman,
                 COALESCE(Yonetici_Adi, '') as yonetici,
                 COALESCE(Email, '') as email,
-                STRFTIME('%Y-%m-%d', İşe_Giriş_Tarihi) as ise_giris,
+                STRFTIME('%Y-%m-%d', Ise_Giris_Tarihi) as ise_giris,
                 CASE WHEN deleted = 0 THEN 1 ELSE 0 END as aktif
             FROM employees
             WHERE deleted = 0 OR deleted IS NULL
@@ -241,6 +241,17 @@ def get_employees_from_db():
 def show_employee_details(search_value):
     """Çalışan detaylarını göster"""
     try:
+        # Input validation
+        if not search_value or not isinstance(search_value, str):
+            st.error("❌ Geçerli bir arama değeri giriniz!")
+            return
+        
+        # Sanitize input
+        search_value = search_value.strip()
+        if len(search_value) < 1 or len(search_value) > 100:
+            st.error("❌ Arama değeri 1-100 karakter arasında olmalıdır!")
+            return
+        
         if search_value.isdigit():
             query = """
                 SELECT Sicil_No, Ad_Soyad, Pozisyon, Departman, Email, Yonetici_Adi

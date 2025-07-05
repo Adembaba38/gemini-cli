@@ -81,12 +81,19 @@ export async function runNonInteractive(
           console.error('Operation cancelled.');
           return;
         }
-        const textPart = getResponseText(resp);
-        if (textPart) {
-          process.stdout.write(textPart);
-        }
-        if (resp.functionCalls) {
-          functionCalls.push(...resp.functionCalls);
+        try {
+          const textPart = getResponseText(resp);
+          if (textPart) {
+            process.stdout.write(textPart);
+          }
+          if (resp.functionCalls) {
+            functionCalls.push(...resp.functionCalls);
+          }
+        } catch (error) {
+          if (!abortController.signal.aborted) {
+            console.error('Error processing response:', error);
+          }
+          break;
         }
       }
 

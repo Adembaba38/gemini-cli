@@ -286,7 +286,9 @@ export const InputPrompt: React.FC<InputPromptProps> = ({
         process.env['TEXTBUFFER_DEBUG'] === '1' ||
         process.env['TEXTBUFFER_DEBUG'] === 'true'
       ) {
-        console.log('[InputPromptCombined] event', { key });
+        if (config?.getDebugMode()) {
+          console.log('[InputPromptCombined] event', { key });
+        }
       }
 
       // Ctrl+Enter for newline, Enter for submit
@@ -363,6 +365,7 @@ export const InputPrompt: React.FC<InputPromptProps> = ({
       handleAutocomplete,
       handleSubmitAndClear,
       shellHistory,
+      config,
     ],
   );
 

@@ -51,11 +51,11 @@ else:
 
 # MySQL Konfigürasyonu
 MYSQL_CONFIG = {
-    'host': 'localhost',
-    'database': 'effinova_db',
-    'user': 'root',
-    'password': '',  # MYSQL ŞİFRENİZİ BURAYA YAZIN
-    'port': 3306,
+    'host': os.getenv('MYSQL_HOST', 'localhost'),
+    'database': os.getenv('MYSQL_DATABASE', 'effinova_db'),
+    'user': os.getenv('MYSQL_USER', 'root'),
+    'password': os.getenv('MYSQL_PASSWORD', ''),  # Use environment variable
+    'port': int(os.getenv('MYSQL_PORT', '3306')),
     'charset': 'utf8mb4',
     'collation': 'utf8mb4_unicode_ci',
     'autocommit': True
@@ -110,7 +110,7 @@ if SQLALCHEMY_AVAILABLE:
         IK_Yonetici_Adi = Column(String(100))
         Email = Column(String(100))
         Sicil_No = Column(String(20), unique=True, nullable=False)
-        İşe_Giriş_Tarihi = Column(Date)
+        Ise_Giris_Tarihi = Column(Date)
         Telefon = Column(String(20))
         Adres = Column(Text)
         Dogum_Tarihi = Column(Date)
@@ -244,14 +244,21 @@ class MySQLManager:
                 return self.cursor.rowcount
 
         except Error as e:
-            st.error(f"MySQL sorgu hatası: {e}")
             logger.error(f"MySQL sorgu hatası (SQL: {query[:100]}..., Params: {params}): {e}")
             if self.connection and not MYSQL_CONFIG.get('autocommit', False):
-                self.connection.rollback()
+                try:
+                    self.connection.rollback()
+                except Exception as rollback_error:
+                    logger.error(f"Rollback hatası: {rollback_error}")
+            # Don't show error to user in interactive mode unless in debug
+            if not hasattr(st, 'session_state') or st.session_state.get('debug_mode', False):
+                st.error(f"MySQL sorgu hatası: {e}")
             return None
         except Exception as e:
-            st.error(f"MySQL genel sorgu hatası: {e}")
             logger.error(f"MySQL genel sorgu hatası (SQL: {query[:100]}..., Params: {params}): {e}")
+            # Don't show error to user in interactive mode unless in debug
+            if not hasattr(st, 'session_state') or st.session_state.get('debug_mode', False):
+                st.error(f"MySQL genel sorgu hatası: {e}")
             return None
 
     def get_dataframe(self, query, params=None):
@@ -430,7 +437,7 @@ def create_sqlite_tables():
                     IK_Yonetici_Adi TEXT,
                     Email TEXT,
                     Sicil_No TEXT UNIQUE NOT NULL,
-                    İşe_Giriş_Tarihi DATE,
+                    Ise_Giris_Tarihi DATE,
                     Telefon TEXT,
                     Adres TEXT,
                     Dogum_Tarihi DATE,

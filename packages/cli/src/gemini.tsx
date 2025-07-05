@@ -77,7 +77,16 @@ async function relaunchWithAdditionalArgs(additionalArgs: string[]) {
     env: newEnv,
   });
 
-  await new Promise((resolve) => child.on('close', resolve));
+  await new Promise((resolve, reject) => {
+    child.on('close', (code) => {
+      if (code === 0) {
+        resolve(code);
+      } else {
+        reject(new Error(`Child process exited with code ${code}`));
+      }
+    });
+    child.on('error', reject);
+  });
   process.exit(0);
 }
 
