@@ -1,4 +1,4 @@
-THIS SHOULD BE A LINTER ERROR# config.py
+# config.py
 
 import mysql.connector
 from mysql.connector import Error
@@ -487,6 +487,10 @@ def create_tables():
         pass
     else:
         return create_sqlite_tables()
+
+def check_and_migrate_data():
+    """Migration fonksiyonu - şimdilik atlanıyor"""
+    pass
 
 def insert_default_data():
     try:
