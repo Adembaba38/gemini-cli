@@ -1,4 +1,4 @@
-# config.py
+THIS SHOULD BE A LINTER ERROR# config.py
 
 import mysql.connector
 from mysql.connector import Error
