@@ -50,15 +50,17 @@ else:
     DATABASE_TYPE = 'sqlite'  # MySQL yoksa zorla SQLite
 
 # MySQL Konfigürasyonu
+# MySQL configuration can be provided via environment variables. Default values
+# below are useful for local development.
 MYSQL_CONFIG = {
-    'host': 'localhost',
-    'database': 'effinova_db',
-    'user': 'root',
-    'password': '',  # MYSQL ŞİFRENİZİ BURAYA YAZIN
-    'port': 3306,
-    'charset': 'utf8mb4',
-    'collation': 'utf8mb4_unicode_ci',
-    'autocommit': True
+    'host': os.getenv('MYSQL_HOST', 'localhost'),
+    'database': os.getenv('MYSQL_DATABASE', 'effinova_db'),
+    'user': os.getenv('MYSQL_USER', 'root'),
+    'password': os.getenv('MYSQL_PASSWORD', ''),
+    'port': int(os.getenv('MYSQL_PORT', '3306')),
+    'charset': os.getenv('MYSQL_CHARSET', 'utf8mb4'),
+    'collation': os.getenv('MYSQL_COLLATION', 'utf8mb4_unicode_ci'),
+    'autocommit': os.getenv('MYSQL_AUTOCOMMIT', 'True').lower() in ('true', '1', 'yes')
 }
 
 # SQLite Konfigürasyonu
