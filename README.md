@@ -78,6 +78,7 @@ gemini
 - Explore the available **[CLI Commands](./docs/cli/commands.md)**.
 - If you encounter any issues, review the **[Troubleshooting guide](./docs/troubleshooting.md)**.
 - For more comprehensive documentation, see the [full documentation](./docs/index.md).
+- For instructions on configuring MySQL connections, see [MySQL Configuration](./docs/mysql-config.md).
 - Take a look at some [popular tasks](#popular-tasks) for more inspiration.
 
 ### Troubleshooting
