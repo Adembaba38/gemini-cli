@@ -364,7 +364,7 @@ if __name__ == "__main__":
             try:
                 user_count_result = execute_query("SELECT COUNT(*) as total FROM users")
                 total_users = user_count_result[0]['total'] if user_count_result and user_count_result[0] else 0
-            except:
+            except Exception:
                 total_users = 0
             
             main()
